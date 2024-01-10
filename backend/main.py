@@ -161,10 +161,9 @@ async def delete_table(request: DeleteTableRequest):
 async def get_tables():
     session = database.get_db_session(engine)
     result = session.query(BTRTable).all()
-    print(result)
     data=[{item.name, item.column_list} for item in result]
     print(data)
-    return JSONResponse(content={"data":[{"name": item.name, "column_list": item.column_list.split(',')} for item in result] })
+    return JSONResponse(content={"data":[{"display_name": item.display_name, "owner": item.owner, "deleted": item.deleted, "column_list": item.column_list.split(',')} for item in result] })
     # return GetTableResponse(data=[{"name": item.name, "column_list": item.column_list.split(',')} for item in result])
     # return JSONResponse(content={"data": [item.name for item in result]})
 

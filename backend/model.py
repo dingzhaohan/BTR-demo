@@ -18,5 +18,7 @@ class BTRTable(Base):
     __tablename__ = "btr_tables"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(50), unique=True, index=True)
-    # owner = Column(Integer, index=True) # user.id
+    display_name = Column(String(50), unique=True, index=True)
+    owner = Column(Integer, index=True, default=0) # 0:root
     column_list = Column(String(500), index=True) 
+    deleted = Column(Integer, default=0) # 0: not deleted, 1: deleted
