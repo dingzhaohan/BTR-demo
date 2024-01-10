@@ -109,7 +109,8 @@ async def login(username: str, password: str):
 
 @app.post('/create_table', response_model=CreateTableResponse)
 async def create_table(request: CreateTableRequest):
-    name = request.name
+    display_name = request.name
+    name = display_name
     column_list = request.column_list
     session = database.get_db_session(engine)
     print(name)
@@ -117,7 +118,7 @@ async def create_table(request: CreateTableRequest):
     # check table exists
     # sql = f"SELECT * FROM tables WHERE name = '{table_name}'"
     # result = session.execute(sql)
-    result = session.query(BTRTable).filter(BTRTable.name == name).all()
+    result = session.query(BTRTable).filter(BTRTable.display_name == display_name).all()
     print(result)
 
     if len(result) > 0:
@@ -128,12 +129,12 @@ async def create_table(request: CreateTableRequest):
         new_columns = [
             Column('id', Integer, primary_key=True, index=True),
         ] + [
-            Column(name, String(50)) for name in column_list
+            Column(column, String(50)) for column in column_list
         ]
-        table = Table(name, Base.metadata, *new_columns)
+        table = Table(display_name, Base.metadata, *new_columns)
 
         Base.metadata.create_all(engine)
-        session.add(BTRTable(name=name, column_list=",".join(column_list)))
+        session.add(BTRTable(name=name, display_name=display_name, column_list=",".join(column_list)))
         session.commit()
     except Exception as e:
         print(e)
@@ -147,9 +148,9 @@ async def delete_table(request: DeleteTableRequest):
     id = request.id
     session = database.get_db_session(engine)
     try:
-        name = session.query(BTRTable).filter(BTRTable.id == id).first().name
-        session.query(BTRTable).filter(BTRTable.id == id).delete()
-        
+        # name = session.query(BTRTable).filter(BTRTable.id == id).first().name
+        result = session.query(BTRTable).filter(BTRTable.id == id).update({"deleted": 1}) # 软删除
+        # session.query(BTRTable).filter(BTRTable.id == id).delete()
         session.commit()
     except Exception as e:
         print(e)
@@ -161,8 +162,8 @@ async def delete_table(request: DeleteTableRequest):
 async def get_tables():
     session = database.get_db_session(engine)
     result = session.query(BTRTable).all()
-    data=[{item.name, item.column_list} for item in result]
-    print(data)
+    # data=[{item.display_name, item.column_list} for item in result]
+    # print(data)
     return JSONResponse(content={"data":[{"display_name": item.display_name, "owner": item.owner, "deleted": item.deleted, "column_list": item.column_list.split(',')} for item in result] })
     # return GetTableResponse(data=[{"name": item.name, "column_list": item.column_list.split(',')} for item in result])
     # return JSONResponse(content={"data": [item.name for item in result]})
