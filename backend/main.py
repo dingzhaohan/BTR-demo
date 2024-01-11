@@ -10,6 +10,7 @@ from model import Base, BTRTable, BTRUser
 from sqlalchemy import Column, Integer, String, Table
 import matplotlib.pyplot as plt
 import io
+from io import BytesIO
 database = Database()
 engine = database.get_db_connection()
 session = database.get_db_session(engine)
@@ -187,7 +188,9 @@ async def create_table_from_excel(table_name: str = Form(...), file: UploadFile 
         raise HTTPException(status_code=400, detail="File is not an Excel document.")
     try:
         # 使用pandas读取上传的Excel文件
-        df = pd.read_excel(file.file, engine='openpyxl')
+        file_content = file.file.read()
+        bytes_io = BytesIO(file_content)
+        df = pd.read_excel(bytes_io, engine='openpyxl')
         column_list = df.columns
         session = database.get_db_session(engine)
         
